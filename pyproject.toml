@@ -1,0 +1,19 @@
+[project]
+name = "python-workbench"
+version = "0.1.0"
+description = "Python Workbench project."
+authors = [
+    {name = "Pawel Wodnicki", email = "151604+32bitmicro@users.noreply.github.com"},
+]
+dependencies = []
+requires-python = ">=3.12"
+readme = "README.md"
+license = {text = "Apache"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
