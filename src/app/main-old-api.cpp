@@ -48,41 +48,6 @@ int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
 
-    PyStatus status;
-    PyConfig config;
-    PyConfig_InitPythonConfig(&config);
-    config.isolated = 1;
-    
-    /// https://docs.python.org/3/c-api/init.html
-    /// https://docs.python.org/3.12/c-api/init_config.html#init-config
-    /// https://docs.python.org/3/c-api/init_config.html#init-python-config
-#if 0
-    /* Decode command line arguments.
-       Implicitly preinitialize Python (in isolated mode). */
-    status = PyConfig_SetBytesArgv(&config, argc, argv);
-    if (PyStatus_Exception(status)) {
-    }
-
-    status = Py_InitializeFromConfig(&config);
-    if (PyStatus_Exception(status)) {
-        goto exception_when_initiliaze;
-    }
-    PyConfig_Clear(&config);
-
-    return Py_RunMain();
-
-exception_when_initiliaze:
-    PyConfig_Clear(&config);
-    if (PyStatus_IsExit(status)) {
-        return status.exitcode;
-    }
-    /* Display the error message and exit the process with
-       non-zero exit code */
-    Py_ExitStatusException(status);
-
-#endif
-
-#if 1
     // Get executable dir and build python PATH variable
     const auto exeDir = getExecutableDir();
 #ifdef IS_WINDOWS
@@ -131,7 +96,4 @@ exception_when_initiliaze:
     }
 
     return EXIT_SUCCESS;
-#endif
-
-
 }

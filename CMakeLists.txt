@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.17)
 include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 include(cmake/clang-18-ubuntu.cmake)
 project (PythonWorkbench)
+enable_language(C CXX)
 
 set(PYTHON_WORBENCH_BUILD build-debug-clang-18-ubuntu-22.04)
 set(PYTHON_WORBENCH_ROOT /mnt/develop2/src/PythonWorkbench)
@@ -11,6 +12,31 @@ set(PYTHON_WORBENCH_LOCAL_INCLUDE "${PYTHON_WORBENCH_INSTALL}/usr/local/include"
 set(PYTHON_WORBENCH_LIB "${PYTHON_WORBENCH_INSTALL}/lib")
 set(PYTHON_WORBENCH_CPYTHON python3.12d)
 set(PYTHON_WORBENCH_CPYTHON_VER python3.12)
+
+# Libraries
+
+#LibEdit_INCLUDE_DIRS 
+set(LibEdit_INCLUDE_DIRS ${PYTHON_WORBENCH_INCLUDE})
+#ZLIB_INCLUDE_DIR
+set(ZLIB_INCLUDE_DIR ${PYTHON_WORBENCH_INCLUDE})
+#zstd_INCLUDE_DIR
+set(zstd_INCLUDE_DIR ${PYTHON_WORBENCH_INCLUDE})
+
+#FFI_LIBRARIES
+set(FFI_LIBRARIES ffi)
+#LibEdit_LIBRARIES
+set(LibEdit_LIBRARIES edit)
+#Terminfo_LIBRARIES
+set(Terminfo_LIBRARIES ${PYTHON_WORBENCH_INCLUDE})
+#ZLIB_LIBRARY
+set(ZLIB_LIBRARY z)
+#zstd_LIBRARY
+set(zstd_LIBRARY zstd)
+
+#HAVE_FFI_CALL
+#Terminfo_LINKABLE
+
+
 
 # Check for C++11
 set (CMAKE_CXX_STANDARD 11)
@@ -60,9 +86,9 @@ if(MSVC)
   set(CPYTHON_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/cpython/Include ${CMAKE_SOURCE_DIR}/libs/cpython/PC)
   set(CPYTHON_LIBRARY_DIR ${CMAKE_SOURCE_DIR}/libs/cpython/PCBuild/${CPYTHON_BUILD_DIR})
   if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    set(CPYTHON_BIN ${CMAKE_SOURCE_DIR}/libs/cpython/PCBuild/${CPYTHON_BUILD_DIR}/python38_d.dll)
+    set(CPYTHON_BIN ${CMAKE_SOURCE_DIR}/libs/cpython/PCBuild/${CPYTHON_BUILD_DIR}/python312_d.dll)
   else()
-    set(CPYTHON_BIN ${CMAKE_SOURCE_DIR}/libs/cpython/PCBuild/${CPYTHON_BUILD_DIR}/python38.dll)
+    set(CPYTHON_BIN ${CMAKE_SOURCE_DIR}/libs/cpython/PCBuild/${CPYTHON_BUILD_DIR}/python312.dll)
   endif()
 else()
   set(CPYTHON_INCLUDE_DIR ${PYTHON_WORBENCH_INCLUDE}/${PYTHON_WORBENCH_CPYTHON})
@@ -83,11 +109,20 @@ endif()
 
 #set(PYBIND_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/pybind11/include)
 #set(PYBIND_INCLUDE_DIR ${PYTHON_WORBENCH_LOCAL_INCLUDE}/pybind11)
-set(PYBIND_INCLUDE_DIR ${PYTHON_WORBENCH_LOCAL_INCLUDE})
+#set(PYBIND_INCLUDE_DIR ${PYTHON_WORBENCH_LOCAL_INCLUDE})
+set(PYBIND_INCLUDE_DIR ${PYTHON_WORBENCH_INCLUDE}/pybind11)
+set(PYBIND_INCLUDE_DIR ${PYTHON_WORBENCH_INCLUDE})
 
 # Source and header files
-FILE(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-FILE(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
+#FILE(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+#FILE(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
+
+# select code for main
+set(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/app/main.cpp)
+#set(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/app/main-gemini.cpp)
+#set(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/app/main-with-repl-4o.cpp)
+#set(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/app/main-with-repl-gemini.cpp)
+FILE(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/app/*.h)
 
 # Linking directories
 link_directories(${CPYTHON_LIBRARY_DIR})
@@ -105,6 +140,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NOMINMAX=1)
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE ${CPYTHON_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PYBIND_INCLUDE_DIR})
+
 
 # On MSVC build, the python library is automatically linked (crazy I know)
 if(NOT MSVC)

@@ -48,41 +48,6 @@ int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
 
-    PyStatus status;
-    PyConfig config;
-    PyConfig_InitPythonConfig(&config);
-    config.isolated = 1;
-    
-    /// https://docs.python.org/3/c-api/init.html
-    /// https://docs.python.org/3.12/c-api/init_config.html#init-config
-    /// https://docs.python.org/3/c-api/init_config.html#init-python-config
-#if 0
-    /* Decode command line arguments.
-       Implicitly preinitialize Python (in isolated mode). */
-    status = PyConfig_SetBytesArgv(&config, argc, argv);
-    if (PyStatus_Exception(status)) {
-    }
-
-    status = Py_InitializeFromConfig(&config);
-    if (PyStatus_Exception(status)) {
-        goto exception_when_initiliaze;
-    }
-    PyConfig_Clear(&config);
-
-    return Py_RunMain();
-
-exception_when_initiliaze:
-    PyConfig_Clear(&config);
-    if (PyStatus_IsExit(status)) {
-        return status.exitcode;
-    }
-    /* Display the error message and exit the process with
-       non-zero exit code */
-    Py_ExitStatusException(status);
-
-#endif
-
-#if 1
     // Get executable dir and build python PATH variable
     const auto exeDir = getExecutableDir();
 #ifdef IS_WINDOWS
@@ -110,28 +75,26 @@ exception_when_initiliaze:
             sys.dont_write_bytecode = True
         )");
 
-        // This imports pwb.py from app/pwb.py
-        // The app folder is the root folder so you don't need to specify app.example.
-        // The app/example script that is being imported is from the actual build folder!
-        // Cmake will copy the python scripts after you have compiled the source code.
-        std::cout << "Importing module..." << std::endl;
-        auto pwb = py::module::import("pwb");
+        // REPL loop
+        while (true) {
+            std::string input;
+            std::cout << ">>> ";
+            std::getline(std::cin, input);
 
-        std::cout << "Initializing class..." << std::endl;
-        const auto PWBClass = pwb.attr("PWB");
-        auto PWBInstance = PWBClass("Hello World"); // Calls the constructor
-        // Will print in the terminal window:
-        // Example constructor with msg: Hello World
+            if (input == "exit") {
+                break;
+            }
 
-        const auto msg = PWBInstance.attr("getMsg")(); // Calls the getMsg
-        std::cout << "Got msg back on C++ side: " << msg.cast<std::string>() << std::endl;
+            try {
+                py::eval_file(input.c_str()); // Evaluate user input
+            } catch (const py::error_already_set& e) {
+                PyErr_Print(); // Print Python errors
+            }
+        }
     } catch (std::exception& e) {
         std::cerr << "Something went wrong: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
-#endif
-
-
 }
